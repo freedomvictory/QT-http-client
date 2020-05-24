@@ -1,27 +1,35 @@
 #include "my_http_client.h"
-#include <iostream>
+#include <QDebug>
+#include <QTextCodec>
 
-
-my_http_client::my_http_client(QObject *parent) : QObject(parent)
+my_http_client::my_http_client(QObject *parent)
+    :  QObject(parent)
 {
     this->manager = new QNetworkAccessManager(this);
-    connect(manager, SIGNAL(finished(QNetworkReply*)),
-            this, SLOT(replyFinished(QNetworkReply*)));
+    connect(manager, &QNetworkAccessManager::finished, this, &my_http_client::replyFinshed);
 }
 
 //client send get request
-void my_http_client::get(const QUrl &url)
+void my_http_client::sendGetReqest(const QUrl &url)
 {
-    this->manager->get(QNetworkRequest(url));
+
+   this->manager->get(QNetworkRequest(url));
+
 }
 
-//client receive reply
-void my_http_client::replyFinished(QNetworkReply *response)
+//QNetworkReply send a finished siganl
+//function replyFinished recv it and handle it
+void my_http_client::replyFinshed(QNetworkReply* reply)
 {
+    qDebug() << "httpFinished:  " << reply;
+    QTextCodec *codec = QTextCodec::codecForName("utf8");
+    QString all = codec->toUnicode(reply->readAll());
+    qDebug() << all;
 
-    std::cout << "replyFinished: resp = " << response << std::endl;
+    reply->deleteLater();
+    reply = Q_NULLPTR;
 
-    deleteLater();  // later relate response
+
 }
 
 
